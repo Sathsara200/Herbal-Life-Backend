@@ -44,19 +44,7 @@ const orderSchema = new mongoose.Schema({
         ],
         required : true
     },
-    days : {
-        type : Number,
-        required : true
-    },
-    startingDate : {
-        type : Date,
-        required : true
-    },
-    endingDate : {
-        type : Date,
-        required : true
-    },
-    isApproved : {
+    isCompleted : {
         type : Boolean,
         required : true,
         default : false
