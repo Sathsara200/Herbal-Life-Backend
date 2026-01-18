@@ -32,11 +32,6 @@ const productSchema = new mongoose.Schema({
        required : true,
        default : true 
     },
-    rating : {
-        type : Number,
-        required : true,
-        default : 0
-    },
     image : {
         type : [String],
         required : true,
