@@ -8,6 +8,7 @@ import userRouter from './routes/userRouter.js';
 import productRouter from './routes/productRouter.js';
 import inquiryRouter from './routes/inquiryRouter.js';
 import orderRouter from './routes/orderRouter.js';
+import reviewRouter from './routes/reveiwRouter.js';
 
 
 dotenv.config();
@@ -50,6 +51,7 @@ app.use("/api/users",userRouter);
 app.use("/api/products",productRouter);
 app.use("/api/inquiries",inquiryRouter);
 app.use("/api/orders",orderRouter);
+app.use("/api/reviews", reviewRouter); 
 
 
 app.listen(5000,()=>{
