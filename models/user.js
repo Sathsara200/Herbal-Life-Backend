@@ -44,11 +44,6 @@ const userSchema = new mongoose.Schema({
         type : String,
         required : true,
         default : "https://img.icons8.com/?size=100&id=98957&format=png&color=000000"
-    },
-    emailVerified : {
-        type : Boolean,
-        required : true,
-        default : false
     }
 });
 
