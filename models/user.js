@@ -40,6 +40,11 @@ const userSchema = new mongoose.Schema({
         type : String,
         required : true
     },
+    emailVerified : {
+        type : Boolean,
+        required : true,
+        default : false
+    },
     profilePicture : {
         type : String,
         required : true,
