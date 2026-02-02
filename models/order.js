@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { isOrderComplete } from "../controllers/orderController";
+
 
 const orderSchema = new mongoose.Schema({
     orderId : {

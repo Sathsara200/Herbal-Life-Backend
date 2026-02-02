@@ -161,7 +161,7 @@ export async function isOrderComplete(req,res){
 					orderId: orderId
 				},
 				{
-					status: status
+					isOrderComplete: status
 				}
 			);
 
