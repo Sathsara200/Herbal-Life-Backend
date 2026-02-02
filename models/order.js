@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { isOrderComplete } from "../controllers/orderController";
 
 const orderSchema = new mongoose.Schema({
     orderId : {
@@ -52,6 +53,11 @@ const orderSchema = new mongoose.Schema({
     totalAmount : {
         type : Number,
         required : true
+    },
+    isOrderComplete: {
+        type: Boolean,
+        required: true,
+        default: false
     }
 })
 
