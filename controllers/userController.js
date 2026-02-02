@@ -2,6 +2,7 @@ import User from '../models/user.js';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import Order from '../models/order.js';
 
 dotenv.config();
 
@@ -133,4 +134,46 @@ export function getUser(req, res) {
 	} else {
 		res.status(403).json({ error: "Unauthorized" });
 	}
+}
+
+export async function getAdminDashboardStats(req, res) {
+  if (!isItAdmin(req)) {
+    return res.status(403).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const totalUsers = await User.countDocuments();
+    const totalCustomers = await User.countDocuments({ role: "customer" });
+    const totalAdmins = await User.countDocuments({ role: "admin" });
+
+    const totalOrders = await Order.countDocuments();
+    const pendingOrders = await Order.countDocuments({ status: "Pending" });
+    const completedOrders = await Order.countDocuments({ status: "Completed" });
+    const cancelledOrders = await Order.countDocuments({ status: "Cancelled" });
+
+    const revenueAgg = await Order.aggregate([
+      { $group: { _id: null, total: { $sum: "$totalAmount" } } }
+    ]);
+
+    const totalRevenue = revenueAgg[0]?.total || 0;
+
+    res.json({
+      users: {
+        totalUsers,
+        totalCustomers,
+        totalAdmins,
+      },
+      orders: {
+        totalOrders,
+        pendingOrders,
+        completedOrders,
+        cancelledOrders,
+      },
+      payments: {
+        totalRevenue,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to load dashboard data" });
+  }
 }
