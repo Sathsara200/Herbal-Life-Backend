@@ -120,3 +120,21 @@ export async function getProduct(req,res){
         })
     }
 }
+
+export async function searchProducts(req, res) {
+    try {
+        const query = req.params.query;
+        const products = await Product.find({
+            $or: [
+                { name: { $regex: query, $options: "i" } },
+                { description: { $regex: query, $options: "i" } }
+            ],
+            availability: true
+        });
+        res.json(products);
+    } catch (e) {
+        res.status(500).json({
+            message: "Failed to search products"
+        });
+    }
+}

@@ -19,10 +19,6 @@ const productSchema = new mongoose.Schema({
         required : true,
         default : "uncategorized"
     },
-    weight : {
-        type : String,
-        required : true
-    },
     description : {
         type : String,
         required : true

@@ -24,9 +24,9 @@ const inquirySchema = new mongoose.Schema({
         default : Date.now()
     },
     response : {
-        type : String,
+        type : [String],
         required : false,
-        default : ""
+        default : []
     },
     isResolved : {
         type : Boolean,

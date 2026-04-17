@@ -85,6 +85,20 @@ export async function getProductReviews(req, res) {
   }
 }
 
+/**
+ * PUBLIC: Get all approved reviews (site-wide)
+ */
+export async function getApprovedReviews(req, res) {
+  try {
+    const reviews = await Review.find({ isApproved: true }).sort({
+      createdAt: -1,
+    });
+    res.json(reviews);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to get approved reviews" });
+  }
+}
+
 
 /**
  * ADMIN: Get all pending reviews
@@ -152,5 +166,24 @@ export async function approveOrRejectReview(req, res) {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to update review" });
+  }
+}
+
+/**
+ * ADMIN: Get all reviews with product details
+ */
+export async function getAllReviews(req, res) {
+  try {
+    if (!isItAdmin(req)) {
+      return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    const reviews = await Review.find()
+      .sort({ createdAt: -1 });
+
+    res.json(reviews);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to get reviews" });
   }
 }

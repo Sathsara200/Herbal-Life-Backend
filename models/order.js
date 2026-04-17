@@ -16,6 +16,13 @@ const orderSchema = new mongoose.Schema({
         required: true,
         default: Date.now
     },
+    shippingInfo: {
+        firstName: { type: String, required: true },
+        lastName: { type: String, required: true },
+        phone: { type: String, required: true },
+        address: { type: String, required: true },
+        city: { type: String, required: true }
+    },
     orderedItems : {
         type : [
             {
@@ -29,7 +36,7 @@ const orderSchema = new mongoose.Schema({
                         required : true
                     },
                     image : {
-                        type : String,
+                        type : [String],
                         required : true
                     },
                     price : {
@@ -45,14 +52,20 @@ const orderSchema = new mongoose.Schema({
         ],
         required : true
     },
-    status : {
-        type : String,
-        required : true,
-        default : "Pending"
-    },
     totalAmount : {
         type : Number,
         required : true
+    },
+    paymentMethod: {
+        type: String,
+        required: true
+    },
+    paymentId: {
+        type: String
+    },
+    isPaid: {
+        type: Boolean,
+        default: false
     },
     isOrderComplete: {
         type: Boolean,

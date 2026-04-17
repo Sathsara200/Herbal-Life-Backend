@@ -1,5 +1,5 @@
 import express from 'express';
-import {  cancelOrder, createOrder, getOrders, getQuote, isOrderComplete } from '../controllers/orderController.js';
+import {  cancelOrder, createOrder, getOrders, getQuote, isOrderComplete, updatePaymentStatus } from '../controllers/orderController.js';
 
 const orderRouter = express.Router();
 
@@ -14,6 +14,9 @@ orderRouter.get("/", getOrders);
 
 // Admin: update order status (Completed / Processing / etc.)
 orderRouter.put("/status/:orderId", isOrderComplete);
+
+// Admin: update payment status (isPaid: true/false)
+orderRouter.put("/payment-status/:orderId", updatePaymentStatus);
 
 // Customer: cancel own order
 orderRouter.put("/cancel/:orderId", cancelOrder);

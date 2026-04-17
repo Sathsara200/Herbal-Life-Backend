@@ -1,5 +1,5 @@
 import express from "express";
-import { blockOrUnblockUser, getAdminDashboardStats, getAllUsers, getUser, loginUser, registerUser } from "../controllers/userController.js";
+import { blockOrUnblockUser, getAdminDashboardStats, getAllUsers, getUser, loginUser, registerUser, updateUser } from "../controllers/userController.js";
 
 const userRouter = express.Router();
 
@@ -9,7 +9,8 @@ userRouter.get("/all",getAllUsers)
 userRouter.get("/",getUser)
 userRouter.get("/dashboard",getAdminDashboardStats)
 
-userRouter.get("/block/:email",blockOrUnblockUser)
+userRouter.put("/block/:email",blockOrUnblockUser)
+userRouter.put("/:email", updateUser)
 
 
 export default userRouter;

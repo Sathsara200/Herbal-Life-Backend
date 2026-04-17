@@ -177,3 +177,63 @@ export async function getAdminDashboardStats(req, res) {
     res.status(500).json({ error: "Failed to load dashboard data" });
   }
 }
+
+export async function updateUser(req, res) {
+	if (req.user == null) {
+		return res.status(403).json({ error: "Unauthorized" });
+	}
+
+	const email = req.params.email;
+	const data = req.body;
+
+	// Only allow users to update their own profile OR an admin to update any profile
+	if (req.user.email !== email && !isItAdmin(req)) {
+		return res.status(403).json({ error: "Unauthorized to update this user" });
+	}
+
+	try {
+		// Prevent updating sensitive fields directly through this endpoint
+		// Role and Block status should be handled by specific admin endpoints
+		delete data.role;
+		delete data.isBlocked;
+		delete data.email; // Email is unique and shouldn't be changed easily
+
+		if (data.password) {
+			data.password = bcrypt.hashSync(data.password, 10);
+		}
+
+		const updatedUser = await User.findOneAndUpdate(
+			{ email: email },
+			{ $set: data },
+			{ new: true }
+		);
+
+		if (!updatedUser) {
+			return res.status(404).json({ error: "User not found" });
+		}
+
+		// Generate a new token with updated information
+		const token = jwt.sign(
+			{
+				firstName: updatedUser.firstName,
+				lastName: updatedUser.lastName,
+				email: updatedUser.email,
+				role: updatedUser.role,
+				address: updatedUser.address,
+				country: updatedUser.country,
+				profilePicture: updatedUser.profilePicture,
+				phone: updatedUser.phone,
+				emailVerified: updatedUser.emailVerified,
+			},
+			process.env.JWT_SECRET
+		);
+
+		res.json({ 
+			message: "User updated successfully", 
+			user: updatedUser,
+			token: token 
+		});
+	} catch (e) {
+		res.status(500).json({ error: "Failed to update user", details: e.message });
+	}
+}

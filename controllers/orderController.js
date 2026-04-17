@@ -8,10 +8,14 @@ export async function createOrder(req, res) {
       return res.status(401).json({ message: "Please login" });
     }
 
-    const { orderedItems } = req.body;
+    const { orderedItems, shippingInfo, paymentMethod, paymentId, isPaid } = req.body;
 
     if (!orderedItems || orderedItems.length === 0) {
       return res.status(400).json({ message: "No items provided" });
+    }
+
+    if (!shippingInfo) {
+      return res.status(400).json({ message: "Shipping information is required" });
     }
 
     // Generate orderId
@@ -27,11 +31,14 @@ export async function createOrder(req, res) {
     let totalAmount = 0;
 
     for (const item of orderedItems) {
-      const product = await Product.findOne({ key: item.key });
+      const productKey = item.product.key;
+      const quantity = item.quantity;
+
+      const product = await Product.findOne({ key: productKey });
 
       if (!product) {
         return res.status(404).json({
-          message: `Product with key ${item.key} not found`,
+          message: `Product with key ${productKey} not found`,
         });
       }
 
@@ -41,7 +48,7 @@ export async function createOrder(req, res) {
         });
       }
 
-      if (!item.qty || item.qty <= 0) {
+      if (!quantity || quantity <= 0) {
         return res.status(400).json({ message: "Invalid quantity" });
       }
 
@@ -49,20 +56,25 @@ export async function createOrder(req, res) {
         product: {
           key: product.key,
           name: product.name,
-          image: product.image[0],
+          image: product.image, // Now an array
           price: product.price,
         },
-        quantity: item.qty,
+        quantity: quantity,
       });
 
-      totalAmount += product.price * item.qty;
+      totalAmount += product.price * quantity;
     }
 
     const order = new Order({
       orderId,
       email: req.user.email,
+      orderDate: new Date(),
+      shippingInfo,
       orderedItems: finalItems,
       totalAmount,
+      paymentMethod,
+      paymentId,
+      isPaid
     });
 
     await order.save();
@@ -72,6 +84,7 @@ export async function createOrder(req, res) {
       order,
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Failed to create order" });
   }
 }
@@ -88,25 +101,28 @@ export async function getQuote(req, res) {
     let totalAmount = 0;
 
     for (const item of orderedItems) {
-      if (!item.qty || item.qty <= 0) {
+      const productKey = item.product?.key || item.key;
+      const quantity = item.quantity || item.qty;
+
+      if (!quantity || quantity <= 0) {
         return res.status(400).json({ message: "Invalid quantity" });
       }
 
-      const product = await Product.findOne({ key: item.key });
+      const product = await Product.findOne({ key: productKey });
 
       if (!product) {
         return res.status(404).json({
-          message: `Product with key ${item.key} not found`,
+          message: `Product with key ${productKey} not found`,
         });
       }
 
       if (!product.availability) {
         return res.status(400).json({
-          message: `Product with key ${item.key} is not available`,
+          message: `Product with key ${productKey} is not available`,
         });
       }
 
-      totalAmount += product.price * item.qty;
+      totalAmount += product.price * quantity;
     }
 
     res.json({
@@ -175,6 +191,32 @@ export async function isOrderComplete(req,res){
 	}
 }
 
+export async function updatePaymentStatus(req, res) {
+  const { orderId } = req.params;
+  const { isPaid } = req.body;
+
+  if (isItAdmin(req)) {
+    try {
+      const order = await Order.findOne({ orderId: orderId });
+
+      if (order == null) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+
+      await Order.updateOne(
+        { orderId: orderId },
+        { isPaid: isPaid }
+      );
+
+      res.json({ message: "Order payment status updated successfully" });
+    } catch (e) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  } else {
+    res.status(403).json({ error: "Unauthorized" });
+  }
+}
+
 export async function cancelOrder(req, res) {
   try {
     if (!req.user) {
@@ -192,7 +234,7 @@ export async function cancelOrder(req, res) {
       return res.status(404).json({ error: "Order not found" });
     }
 
-    if (order.isCompleted) {
+    if (order.isOrderComplete) {
       return res.status(400).json({ error: "Order already completed" });
     }
 
